@@ -1,11 +1,9 @@
+from anthropic import Anthropic
+import os
 import re
-import os
-from openai import AzureOpenAI
-from azure.core.credentials import AzureKeyCredential
-from dotenv import load_dotenv
-import os
 
-load_dotenv()
+client = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+
 def llm_call(prompt: str, system_prompt: str = "", model="claude-3-5-sonnet-20241022") -> str:
     """
     Calls the model with the given prompt and returns the response.
@@ -18,19 +16,16 @@ def llm_call(prompt: str, system_prompt: str = "", model="claude-3-5-sonnet-2024
     Returns:
         str: The response from the language model.
     """
-
-    client = AzureOpenAI(
-    api_version="2024-12-01-preview",
-    azure_endpoint="https://glasgow-innovation-poc-llm.openai.azure.com/",
-    api_key=os.environ["API_KEY"]
-    )
-
+    client = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
     messages = [{"role": "user", "content": prompt}]
-    response = client.chat.completions.create(
+    response = client.messages.create(
+        model=model,
+        max_tokens=4096,
+        system=system_prompt,
         messages=messages,
-        model="gpt-4o"
+        temperature=0.1,
     )
-    return response.choices[0].message.content
+    return response.content[0].text
 
 def extract_xml(text: str, tag: str) -> str:
     """
