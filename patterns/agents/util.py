@@ -48,9 +48,13 @@ def extract_xml(text: str, tag: str) -> str:
     match = re.search(f'<{tag}>(.*?)</{tag}>', text, re.DOTALL)
     return match.group(1) if match else ""
 
-def time_invocation(strategy: Callable):
+def time_invocation(log_file: str, strategy: Callable):
     start_time = time.time()
     result = strategy()
     elapsed_time = time.time() - start_time
-    print(f"Execution time: {elapsed_time:.2f} seconds")
+    log_to_file(log_file, f"Execution time: {elapsed_time:.2f} seconds")
     return result
+
+def log_to_file(log_file: str, text: str):
+    with open(log_file, "a", encoding="utf-8") as f:
+        f.write(text + "\n")
