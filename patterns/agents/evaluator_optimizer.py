@@ -2,7 +2,6 @@ from util import llm_call, extract_xml, log_to_file
 
 LOG_FILE = "./logs/generation_evaluation.log"
 
-
 def generate(prompt: str, task: str, context: str = "") -> tuple[str, str]:
     """Generate and improve a solution based on feedback."""
     full_prompt = f"{prompt}\n{context}\nTask: {task}" if context else f"{prompt}\nTask: {task}"
