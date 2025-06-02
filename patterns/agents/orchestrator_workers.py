@@ -32,7 +32,7 @@ class FlexibleOrchestrator:
         self,
         orchestrator_prompt: str,
         worker_prompt: str,
-        log_file: str = "orchestrator.log"
+        log_file: str = "./logs/orchestrator.log"
     ):
         """Initialize with prompt templates."""
         self.orchestrator_prompt = orchestrator_prompt
@@ -63,9 +63,9 @@ class FlexibleOrchestrator:
         tasks_xml = extract_xml(orchestrator_response, "tasks")
         tasks = parse_tasks(tasks_xml)
         
-        log_to_file("\n=== ORCHESTRATOR OUTPUT ===", self.log_file)
-        log_to_file(f"\nANALYSIS:\n{analysis}", self.log_file)
-        log_to_file(f"\nTASKS:\n{tasks}", self.log_file)
+        log_to_file(self.log_file, "\n=== ORCHESTRATOR OUTPUT ===")
+        log_to_file(self.log_file, f"\nANALYSIS:\n{analysis}")
+        log_to_file(self.log_file, f"\nTASKS:\n{tasks}")
         
         # Step 2: Process each task
         worker_results = []
@@ -87,7 +87,7 @@ class FlexibleOrchestrator:
                 "result": result
             })
             
-            log_to_file(f"\n=== WORKER RESULT ({task_info['type']}) ===\n{result}\n", self.log_file)
+            log_to_file(self.log_file, f"\n=== WORKER RESULT ({task_info['type']}) ===\n{result}\n")
         
         return {
             "analysis": analysis,
@@ -118,6 +118,27 @@ Focus on how each approach serves different aspects of the task.
 </tasks>
 """
 
+ORCHESTRATOR_PROMPT_NO_SPOON = """
+Analyze this task and break it down into 2-3 distinct approaches:
+
+Task: {task}
+
+Return your response in this format:
+
+<analysis>
+Explain your understanding of the task and which variations would be valuable.
+Focus on how each approach serves different aspects of the task.
+</analysis>
+
+<tasks>
+    <task>
+    <type>type of approach</type>
+    <description>Describe this distinct approach to the original task</description>
+    </task>
+    ...
+</tasks>
+"""
+
 WORKER_PROMPT = """
 Generate content based on:
 Task: {original_task}
@@ -132,7 +153,7 @@ Your content here, maintaining the specified style and fully addressing requirem
 """
 
 orchestrator = FlexibleOrchestrator(
-    orchestrator_prompt=ORCHESTRATOR_PROMPT,
+    orchestrator_prompt=ORCHESTRATOR_PROMPT_NO_SPOON,
     worker_prompt=WORKER_PROMPT,
 )
 
