@@ -1,4 +1,6 @@
-from util import llm_call, extract_xml
+from util import llm_call, extract_xml, log_to_file
+
+LOG_FILE = "./logs/generation_evaluation.log"
 
 def generate(prompt: str, task: str, context: str = "") -> tuple[str, str]:
     """Generate and improve a solution based on feedback."""
@@ -6,12 +8,12 @@ def generate(prompt: str, task: str, context: str = "") -> tuple[str, str]:
     response = llm_call(full_prompt)
     thoughts = extract_xml(response, "thoughts")
     result = extract_xml(response, "response")
-    
-    print("\n=== GENERATION START ===")
-    print(f"Thoughts:\n{thoughts}\n")
-    print(f"Generated:\n{result}")
-    print("=== GENERATION END ===\n")
-    
+
+    log_to_file(LOG_FILE, "\n=== GENERATION START ===")
+    log_to_file(LOG_FILE, f"Thoughts:\n{thoughts}\n")
+    log_to_file(LOG_FILE, f"Generated:\n{result}")
+    log_to_file(LOG_FILE, "=== GENERATION END ===\n")
+
     return thoughts, result
 
 def evaluate(prompt: str, content: str, task: str) -> tuple[str, str]:
@@ -20,34 +22,34 @@ def evaluate(prompt: str, content: str, task: str) -> tuple[str, str]:
     response = llm_call(full_prompt)
     evaluation = extract_xml(response, "evaluation")
     feedback = extract_xml(response, "feedback")
-    
-    print("=== EVALUATION START ===")
-    print(f"Status: {evaluation}")
-    print(f"Feedback: {feedback}")
-    print("=== EVALUATION END ===\n")
-    
+
+    log_to_file(LOG_FILE, "=== EVALUATION START ===")
+    log_to_file(LOG_FILE, f"Status: {evaluation}")
+    log_to_file(LOG_FILE, f"Feedback: {feedback}")
+    log_to_file(LOG_FILE, "=== EVALUATION END ===\n")
+
     return evaluation, feedback
 
 def loop(task: str, evaluator_prompt: str, generator_prompt: str) -> tuple[str, list[dict]]:
     """Keep generating and evaluating until requirements are met."""
     memory = []
     chain_of_thought = []
-    
+
     thoughts, result = generate(generator_prompt, task)
     memory.append(result)
     chain_of_thought.append({"thoughts": thoughts, "result": result})
-    
+
     while True:
         evaluation, feedback = evaluate(evaluator_prompt, result, task)
         if evaluation == "PASS":
             return result, chain_of_thought
-            
+
         context = "\n".join([
             "Previous attempts:",
             *[f"- {m}" for m in memory],
             f"\nFeedback: {feedback}"
         ])
-        
+
         thoughts, result = generate(generator_prompt, task, context)
         memory.append(result)
         chain_of_thought.append({"thoughts": thoughts, "result": result})
