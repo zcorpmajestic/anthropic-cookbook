@@ -1,9 +1,11 @@
 import re
 import os
+from typing import Callable
 from openai import AzureOpenAI
 from azure.core.credentials import AzureKeyCredential
 from dotenv import load_dotenv
 import os
+import time
 
 load_dotenv()
 def llm_call(prompt: str, system_prompt: str = "", model="claude-3-5-sonnet-20241022") -> str:
@@ -45,3 +47,10 @@ def extract_xml(text: str, tag: str) -> str:
     """
     match = re.search(f'<{tag}>(.*?)</{tag}>', text, re.DOTALL)
     return match.group(1) if match else ""
+
+def time_invocation(strategy: Callable):
+    start_time = time.time()
+    result = strategy()
+    elapsed_time = time.time() - start_time
+    print(f"Execution time: {elapsed_time:.2f} seconds")
+    return result

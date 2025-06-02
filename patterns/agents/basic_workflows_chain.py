@@ -1,28 +1,22 @@
 from concurrent.futures import ThreadPoolExecutor
 from typing import List, Dict, Callable
-from util import llm_call
+from util import llm_call, time_invocation
 import time
 
 #The time was actually better unchained, but the result was terrible - run it again and compare.
 
 def chain(input: str, prompts: List[str]) -> str:
-    start_time = time.time()
     result = input 
     for i, prompt in enumerate(prompts, 1):
         #print(f"\nStep {i}:")
         result = llm_call(f"{prompt}\nInput: {result}")
         print(result)
-    elapsed = time.time() - start_time
-    print(f"\nTotal elapsed time: {elapsed:.2f} seconds")
     return result
 
 def unchain(input: str, prompts: List[str]) -> str:
-    start_time = time.time()
     prompt = "\n".join(prompts)
     #print(f"Final Prompt: {prompt}\nInput: {input}")
     result = llm_call(f"{prompt}\nInput: {input}")
-    elapsed = time.time() - start_time
-    print(f"\nTotal elapsed time: {elapsed:.2f} seconds")
     print(f"\n{result}")
     return result
 
@@ -65,6 +59,6 @@ Operating margin improved to 34%.
 """
 
 print("<---Chained--->")
-formatted_result = chain(report, data_processing_steps)
+formatted_result = time_invocation(lambda: chain(report, data_processing_steps))
 print("<---Unchained--->")
-formatted_result = unchain(report, data_processing_steps)
+formatted_result = time_invocation(lambda: unchain(report, data_processing_steps))
